@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><title>Register - Women Safety App</title></head>
+<body>
+  <div style="text-align: center;">
+  <h2>Register</h2>
+  <div><input id="name" placeholder="Full name"/></div>
+  <div><input id="email" placeholder="Email"/></div>
+  <div><input id="phone" placeholder="Phone (optional)"/></div>
+  <div><input id="password" placeholder="Password" type="password"/></div>
+  <div><button onclick="register()">Register</button></div>
+  </div>
+
+  <div id="otpArea" style="display:none;">
+    <h3>Enter OTP sent to your email</h3>
+    <input id="otp" placeholder="OTP"/><button onclick="verifyOtp()">Verify</button>
+  </div>
+
+  <script>
+    async function register() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/auth/register', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ name, email, phone, password })
+      });
+      const j = await res.json();
+      alert(j.message || 'Registered. Check email for OTP.');
+      document.getElementById('otpArea').style.display = 'block';
+    }
+
+    async function verifyOtp() {
+      const destination = document.getElementById('email').value;
+      const code = document.getElementById('otp').value;
+      const res = await fetch('/api/auth/verify-otp', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ destination, code })
+      });
+      const j = await res.json();
+      if (j.success) {
+        alert('Verified. You can now login.');
+        window.location = '/login.html';
+      } else {
+        alert('OTP invalid or expired');
+      }
+    }
+  </script>
+</body>
+</html>

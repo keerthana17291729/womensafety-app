@@ -1,0 +1,13 @@
+Gmail & SMS integration notes
+-----------------------------
+1) Gmail (SMTP)
+   - In application.properties set spring.mail.username and spring.mail.password
+   - Prefer creating an App Password when using Gmail with 2FA.
+   - Example (application.properties):
+       spring.mail.username=youremail@gmail.com
+       spring.mail.password=your_app_password
+
+2) SMS (optional)
+   - To send SMS for OTP or SOS, integrate an SMS provider like Twilio.
+   - Where OTP is generated (UserService.generateAndSendOtp) you can add a Twilio REST API call.
+

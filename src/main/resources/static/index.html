@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Women Safety App - Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #map { height: 70vh; }
+    .topbar { padding: 10px; background: #2b6cb0; color: white; display:flex; align-items:center; justify-content:space-between; }
+    .btn { background:#e53e3e; color:white; padding:10px 14px; border:none; border-radius:6px; cursor:pointer; }
+    .small { font-size:0.9rem; }
+    .controls { padding: 12px; display:flex; gap:10px; align-items:center; }
+    .card { padding:10px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>Women Safety App - Dashboard</div>
+    <div>
+      <button onclick="logout()" class="btn small">Logout</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="card">
+      <button id="sosBtn" class="btn" onclick="triggerSOS()">SOS</button>
+      <div style="margin-top:8px;">Shake or press SOS to alert your emergency contacts.</div>
+    </div>
+    <div class="card">
+      <label><input type="checkbox" id="shareToggle" checked /> Share location</label><br/>
+      <button onclick="startSharing()">Start Sharing</button>
+    </div>
+    <div class="card" id="contactsCard">
+      <strong>Emergency Contacts</strong>
+      <ul id="contactsList"></ul>
+      <input id="cname" placeholder="Name" /><input id="cemail" placeholder="Email" />
+      <button onclick="addContact()">Add</button>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const apiBase = '/api';
+    let token = localStorage.getItem('token');
+    if (!token) {
+      window.location = '/login.html';
+    }
+
+    const map = L.map('map').setView([20.5937,78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    let marker;
+    function updateMarker(lat, lon) {
+      if (marker) {
+        marker.setLatLng([lat, lon]);
+      } else {
+        marker = L.marker([lat, lon]).addTo(map);
+      }
+      map.setView([lat, lon], 15);
+    }
+
+    let watchId = null;
+    function startSharing() {
+      if (!navigator.geolocation) { 
+        alert('Geolocation not supported'); 
+        return; 
+      }
+
+      // Clear any previous watch
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+
+      const isChecked = document.getElementById('shareToggle').checked;
+      if (!isChecked) {
+        alert('Location sharing is turned off.');
+        return; // stop here if unchecked ❌
+      }
+
+      watchId = navigator.geolocation.watchPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        updateMarker(lat, lon);
+
+        // only send to server when checked
+        if (document.getElementById('shareToggle').checked) {
+          await fetch(apiBase + '/location/update', {
+             method: 'POST',
+             headers: { 
+              'Content-Type': 'application/json', 
+              'Authorization': 'Bearer ' + token 
+            },
+            body: JSON.stringify({ 
+              latitude: lat, 
+              longitude: lon, 
+              sharingEnabled: true 
+            })
+          });
+        }
+      }, (err) => { 
+        console.error(err); 
+      }, { enableHighAccuracy: true, maximumAge: 1000 });
+   }
+
+
+    // SOS
+    async function triggerSOS() {
+      document.getElementById('sosBtn').innerText = 'Sending...';
+      const res = await fetch(apiBase + '/sos/trigger', { method:'POST', headers:{ 'Authorization':'Bearer ' + token } });
+      const data = await res.json();
+      alert('SOS sent. Notified contacts: ' + (data.contactsNotifyCount || 0));
+      document.getElementById('sosBtn').innerText = 'SOS';
+    }
+
+    // contacts
+    async function loadProfile() {
+      const r = await fetch(apiBase + '/profile/me', { headers: { 'Authorization':'Bearer ' + token } });
+      const j = await r.json();
+      const contacts = j.contacts || [];
+      const ul = document.getElementById('contactsList');
+      ul.innerHTML = '';
+      contacts.forEach(c => {
+        const li = document.createElement('li');
+        li.innerText = c.name + ' (' + (c.email || c.phone || 'no contact') + ')';
+        ul.appendChild(li);
+      });
+    }
+
+    async function addContact() {
+      const name = document.getElementById('cname').value;
+      const email = document.getElementById('cemail').value;
+      if (!name || !email) { alert('provide name & email'); return; }
+      await fetch(apiBase + '/profile/contacts', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ name, email })
+      });
+      document.getElementById('cname').value=''; document.getElementById('cemail').value='';
+      await loadProfile();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location = '/login.html';
+    }
+
+    // Shake detection (basic)
+    let lastShake = 0;
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', function(event) {
+        const acc = event.accelerationIncludingGravity;
+        const total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+        if (total > 30) {
+          const now = Date.now();
+          if (now - lastShake > 3000) {
+            lastShake = now;
+            triggerSOS();
+          }
+        }
+      });
+    }
+
+    // init
+    startSharing();
+    loadProfile();
+
+  </script>
+</body>
+</html>
