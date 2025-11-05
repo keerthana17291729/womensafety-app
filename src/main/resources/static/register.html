@@ -1,19 +1,111 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><title>Register - Women Safety App</title></head>
-<body>
-  <div style="text-align: center;">
-  <h2>Register</h2>
-  <div><input id="name" placeholder="Full name"/></div>
-  <div><input id="email" placeholder="Email"/></div>
-  <div><input id="phone" placeholder="Phone (optional)"/></div>
-  <div><input id="password" placeholder="Password" type="password"/></div>
-  <div><button onclick="register()">Register</button></div>
-  </div>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Register - Women Safety App</title>
 
-  <div id="otpArea" style="display:none;">
-    <h3>Enter OTP sent to your email</h3>
-    <input id="otp" placeholder="OTP"/><button onclick="verifyOtp()">Verify</button>
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ff6b6b, #f06595, #845ef7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 1.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 40px;
+    width: 330px;
+    text-align: center;
+    animation: slideUp 0.8s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  input {
+    width: 90%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  input:focus {
+    border-color: #845ef7;
+    box-shadow: 0 0 8px rgba(132, 94, 247, 0.4);
+    outline: none;
+    transform: scale(1.03);
+  }
+
+  input:hover {
+    border-color: #f06595;
+  }
+
+  button {
+    background: linear-gradient(90deg, #845ef7, #f06595);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    width: 95%;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+  }
+
+  button:hover {
+    background: linear-gradient(90deg, #f06595, #845ef7);
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(240, 101, 149, 0.3);
+  }
+
+  #otpArea {
+    margin-top: 25px;
+    animation: fadeIn 0.8s ease;
+  }
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Register</h2>
+    <input id="name" placeholder="Full name" />
+    <input id="email" placeholder="Email" />
+    <input id="phone" placeholder="Phone (optional)" />
+    <input id="password" placeholder="Password" type="password" />
+    <button onclick="register()">Register</button>
+
+    <div id="otpArea" style="display:none;">
+      <h3>Enter OTP</h3>
+      <input id="otp" placeholder="OTP" />
+      <button onclick="verifyOtp()">Verify</button>
+    </div>
   </div>
 
   <script>
@@ -22,11 +114,13 @@
       const email = document.getElementById('email').value;
       const phone = document.getElementById('phone').value;
       const password = document.getElementById('password').value;
+
       const res = await fetch('/api/auth/register', {
         method:'POST',
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ name, email, phone, password })
       });
+
       const j = await res.json();
       alert(j.message || 'Registered. Check email for OTP.');
       document.getElementById('otpArea').style.display = 'block';
@@ -35,11 +129,13 @@
     async function verifyOtp() {
       const destination = document.getElementById('email').value;
       const code = document.getElementById('otp').value;
+
       const res = await fetch('/api/auth/verify-otp', {
         method:'POST',
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ destination, code })
       });
+
       const j = await res.json();
       if (j.success) {
         alert('Verified. You can now login.');

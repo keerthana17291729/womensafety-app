@@ -1,30 +1,141 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><title>Login - Women Safety App</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Login - Women Safety App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(120deg, #6a11cb, #2575fc);
+      background-size: 300% 300%;
+      animation: bgMove 6s infinite alternate;
+    }
+
+    @keyframes bgMove {
+      0% { background-position: left; }
+      100% { background-position: right; }
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px 50px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 320px;
+      transition: transform 0.3s ease;
+      animation: slideIn 0.8s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .login-container:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #2b6cb0;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 6px rgba(37, 117, 252, 0.3);
+    }
+
+    button {
+      width: 100%;
+      background: #2575fc;
+      border: none;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover {
+      background: #1e63e0;
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 15px;
+      color: #2575fc;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+
+    a:hover {
+      color: #1e63e0;
+      text-decoration: underline;
+    }
+  </style>
+</head>
 <body>
-  <h2>Login</h2>
-  <div><input id="emailOrPhone" placeholder="Email or phone"/></div>
-  <div><input id="password" placeholder="Password" type="password"/></div>
-  <div><button onclick="login()">Login</button> <a href="/register.html">Register</a></div>
+
+  <div class="login-container">
+    <h2>Women Safety App</h2>
+    <input id="emailOrPhone" placeholder="Email or Phone" />
+    <input id="password" placeholder="Password" type="password" />
+    <button onclick="login()">Login</button>
+    <a href="/register.html">New user? Register here</a>
+  </div>
 
   <script>
     async function login() {
       const emailOrPhone = document.getElementById('emailOrPhone').value;
       const password = document.getElementById('password').value;
+      if (!emailOrPhone || !password) {
+        alert("Please fill all fields");
+        return;
+      }
+
       const res = await fetch('/api/auth/login', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emailOrPhone, password })
       });
+
       const j = await res.json();
       if (j.token) {
         localStorage.setItem('token', j.token);
         window.location = '/index.html';
       } else {
-        alert('Login failed');
+        alert('Invalid login credentials');
       }
     }
   </script>
+
 </body>
 </html>
-
