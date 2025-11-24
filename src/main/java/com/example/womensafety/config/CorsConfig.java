@@ -13,10 +13,13 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("https://your-frontend.vercel.app", "http://localhost:3000") // replace after deploy
-                    .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
+                        .allowedOrigins(
+                            "https://womensafety-frontend.onrender.com", 
+                            "http://localhost:3000"
+                        )
+                        .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
