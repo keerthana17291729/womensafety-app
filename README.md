@@ -26,7 +26,8 @@ Quick setup (local):
 4. From project root run:
    mvn clean package
    mvn spring-boot:run
-5. Open http://localhost:8080/register.html to create account, verify OTP, login, and test dashboard.
+5. Open 
+ to create account, verify OTP, login, and test dashboard.
 
 Important notes:
 - For Gmail SMTP: if using a personal Gmail account, create an App Password (if 2FA enabled) or enable "Less secure apps" (not recommended).
